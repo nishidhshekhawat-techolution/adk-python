@@ -1,4 +1,4 @@
-# Copyright 2026 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -61,7 +61,6 @@ class HttpAuth(BaseModelWithConfig):
   # Examples: 'basic', 'bearer'
   scheme: str
   credentials: HttpCredentials
-  additional_headers: Optional[Dict[str, str]] = None
 
 
 class OAuth2Auth(BaseModelWithConfig):
@@ -82,6 +81,9 @@ class OAuth2Auth(BaseModelWithConfig):
   expires_at: Optional[int] = None
   expires_in: Optional[int] = None
   audience: Optional[str] = None
+  # --- Fields populated after the user authorizes ---
+  auth_response_uri: Optional[str] = None
+  auth_code: Optional[str] = None
   token_endpoint_auth_method: Optional[
       Literal[
           "client_secret_basic",
