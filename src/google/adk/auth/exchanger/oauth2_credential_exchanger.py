@@ -31,9 +31,9 @@ from google.adk.auth.oauth2_credential_util import update_credential_with_tokens
 from google.adk.utils.feature_decorator import experimental
 from typing_extensions import override
 
-from .custom_base_credential_exchanger import BaseCredentialExchanger
-from .custom_base_credential_exchanger import CredentialExchangeError
-from .custom_base_credential_exchanger import ExchangeResult
+from .base_credential_exchanger import BaseCredentialExchanger
+from .base_credential_exchanger import CredentialExchangeError
+from .base_credential_exchanger import ExchangeResult
 
 try:
   from authlib.integrations.requests_client import OAuth2Session
