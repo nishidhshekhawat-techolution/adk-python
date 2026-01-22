@@ -1,4 +1,4 @@
-# Copyright 2026 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,6 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+# Updated _exchange_authorization_code
+# google-adk-auth-exchanger-oauth2_credential_exchanger.py
 
 """OAuth2 credential exchanger implementation."""
 
@@ -29,9 +31,9 @@ from google.adk.auth.oauth2_credential_util import update_credential_with_tokens
 from google.adk.utils.feature_decorator import experimental
 from typing_extensions import override
 
-from .base_credential_exchanger import BaseCredentialExchanger
-from .base_credential_exchanger import CredentialExchangeError
-from .base_credential_exchanger import ExchangeResult
+from .custom_base_credential_exchanger import BaseCredentialExchanger
+from .custom_base_credential_exchanger import CredentialExchangeError
+from .custom_base_credential_exchanger import ExchangeResult
 
 try:
   from authlib.integrations.requests_client import OAuth2Session
@@ -171,10 +173,10 @@ class OAuth2CredentialExchanger(BaseCredentialExchanger):
     return auth_uri
 
   async def _exchange_authorization_code(
-      self,
-      auth_credential: AuthCredential,
-      auth_scheme: AuthScheme,
-  ) -> ExchangeResult:
+    self,
+    auth_credential: AuthCredential,
+    auth_scheme: AuthScheme,
+) -> ExchangeResult:
     """Exchange authorization code for access token.
 
     Args:
@@ -187,25 +189,27 @@ class OAuth2CredentialExchanger(BaseCredentialExchanger):
     """
     client, token_endpoint = create_oauth2_session(auth_scheme, auth_credential)
     if not client:
-      logger.warning(
-          "Could not create OAuth2 session for authorization code exchange"
-      )
-      return ExchangeResult(auth_credential, False)
+        logger.warning(
+            "Could not create OAuth2 session for authorization code exchange"
+        )
+        return ExchangeResult(auth_credential, False)
 
     try:
-      tokens = client.fetch_token(
-          token_endpoint,
-          authorization_response=self._normalize_auth_uri(
-              auth_credential.oauth2.auth_response_uri
-          ),
-          code=auth_credential.oauth2.auth_code,
-          grant_type=OAuthGrantType.AUTHORIZATION_CODE,
-          client_id=auth_credential.oauth2.client_id,
-      )
-      update_credential_with_tokens(auth_credential, tokens)
-      logger.debug("Successfully exchanged authorization code for access token")
+        tokens = client.fetch_token(
+            token_endpoint,
+            authorization_response=self._normalize_auth_uri(
+                auth_credential.oauth2.auth_response_uri
+            ),
+            code=auth_credential.oauth2.auth_code,
+            grant_type=OAuthGrantType.AUTHORIZATION_CODE,
+            client_id=auth_credential.oauth2.client_id,
+            # Add the code_verifier from the auth_credential
+            code_verifier=auth_credential.oauth2.code_verifier,
+        )
+        update_credential_with_tokens(auth_credential, tokens)
+        logger.debug("Successfully exchanged authorization code for access token")
     except Exception as e:
-      logger.error("Failed to exchange authorization code: %s", e)
-      return ExchangeResult(auth_credential, False)
+        logger.error("Failed to exchange authorization code: %s", e)
+        return ExchangeResult(auth_credential, False)
 
     return ExchangeResult(auth_credential, True)
